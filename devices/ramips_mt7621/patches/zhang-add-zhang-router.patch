@@ -1,0 +1,287 @@
+From: OpenWrt Custom
+Date: Now
+Subject: add ZHANG_ROUTER MT7621 device
+
+diff --git a/target/linux/ramips/dts/mt7621_zhang_router.dts b/target/linux/ramips/dts/mt7621_zhang_router.dts
+new file mode 100644
+--- /dev/null
++++ b/target/linux/ramips/dts/mt7621_zhang_router.dts
+@@ -0,0 +1,217 @@
++
++//基于这个做调整mt7621_totolink_a7000r.dts
++// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
++
++#include "mt7621.dtsi"
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/leds/common.h>
++
++/ {
++	compatible = "zhang,router", "mediatek,mt7621-soc";
++	model = "ZHANG ROUTER";
++ 
++
++	
++	chosen {
++		bootargs = "console=ttyS0,115200";
++	};
++	
++	leds {
++		compatible = "gpio-leds";
++
++		
++		
++        out_gpio7 {
++            label = "out-gpio7";
++            gpios = <&gpio 7 GPIO_ACTIVE_HIGH>;
++            default-state = "off";  // 初始电平
++        };
++
++		
++	};
++
++	keys {
++		compatible = "gpio-keys";
++
++		reset {
++			label = "reset";
++			gpios = <&gpio 16 GPIO_ACTIVE_LOW>;
++			debounce-interval = <60>;
++			linux,code = <KEY_RESTART>;
++		};
++        key_gpio8 {
++            label = "key-gpio8";
++            gpios = <&gpio 8  GPIO_ACTIVE_LOW>;
++            linux,code = <BTN_0>;  // 映射为按键0
++            debounce-interval = <50>;
++
++        };
++		
++        key_gpio14 {
++            label = "key-gpio14";
++            gpios = <&gpio 14  GPIO_ACTIVE_LOW>;
++            linux,code = <BTN_1>;  // 映射为按键1
++            debounce-interval = <50>;
++        };
++
++
++
++		button-wps {
++			label = "wps";
++			gpios = <&gpio 12 GPIO_ACTIVE_LOW>;
++			debounce-interval = <60>;
++			linux,code = <KEY_WPS_BUTTON>;
++		};
++	};
++}; 
++ 
++
++// 必须开启 gpio 控制器
++&gpio {
++    status = "okay";
++};
++
++
++
++
++&spi0 {
++	status = "okay";
++
++	flash@0 {
++		compatible = "jedec,spi-nor";
++		reg = <0>;
++		spi-max-frequency = <40000000>;
++
++		partitions {
++			compatible = "fixed-partitions";
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			partition@0 {
++				label = "u-boot";
++				reg = <0x0 0x30000>;
++				//read-only;
++			};
++
++			partition@30000 {
++				label = "u-boot-env";
++				reg = <0x30000 0x10000>;
++				//read-only;
++			};
++
++			partition@40000 {
++				label = "factory";
++				reg = <0x40000 0x10000>;
++				//read-only;
++
++				nvmem-layout {
++					compatible = "fixed-layout";
++					#address-cells = <1>;
++					#size-cells = <1>;
++
++					eeprom_factory_0: eeprom@0 {
++						reg = <0x0 0x4da8>;
++					};
++
++					eeprom_factory_8000: eeprom@8000 {
++						reg = <0x8000 0x4da8>;
++					};
++
++					macaddr_factory_e000: macaddr@e000 {
++						compatible = "mac-base";
++						reg = <0xe000 0x6>;
++						#nvmem-cell-cells = <1>;
++					};
++				};
++			};
++
++			partition@50000 {
++				compatible = "denx,uimage";
++				label = "firmware";
++				reg = <0x50000 0xfb0000>;
++			};
++		};
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&pcie0 {
++	wifi@0,0 {
++		compatible = "mediatek,mt76";
++		reg = <0x0000 0 0 0 0>;
++		nvmem-cells = <&eeprom_factory_0>;
++		nvmem-cell-names = "eeprom";
++		ieee80211-freq-limit = <2400000 2500000>;
++	};
++};
++
++&pcie1 {
++	wifi@0,0 {
++		compatible = "mediatek,mt76";
++		reg = <0x0000 0 0 0 0>;
++		nvmem-cells = <&eeprom_factory_8000>;
++		nvmem-cell-names = "eeprom";
++		ieee80211-freq-limit = <5000000 6000000>;
++	};
++};
++
++&gmac0 {
++	nvmem-cells = <&macaddr_factory_e000 0>;
++	nvmem-cell-names = "mac-address";
++};
++
++&gmac1 {
++	status = "okay";
++	label = "wan";
++	phy-handle = <&ethphy4>;
++
++	nvmem-cells = <&macaddr_factory_e000 1>;
++	nvmem-cell-names = "mac-address";
++};
++
++&ethphy4 {
++	/delete-property/ interrupts;
++};
++
++&switch0 {
++	ports {
++
++		port@0 {
++			status = "okay";
++			label = "wan";
++		};
++
++	
++		port@1 {
++			status = "okay";
++			label = "lan1";
++		};
++
++		port@2 {
++			status = "okay";
++			label = "lan2";
++		};
++
++		port@3 {
++			status = "okay";
++			label = "lan3";
++		};
++
++		port@4 {
++			status = "okay";
++			label = "lan4";
++		};
++	};
++}; 
++
++&state_default {
++	gpio {
++		groups = "i2c", "wdt";
++		function = "gpio";
++	};
++};
+diff --git a/target/linux/ramips/image/mt7621.mk b/target/linux/ramips/image/mt7621.mk
+--- a/target/linux/ramips/image/mt7621.mk
++++ b/target/linux/ramips/image/mt7621.mk
+@@ -3904,0 +3905,9 @@
++
++define Device/zhang_router
++  $(Device/dsa-migration)
++  IMAGE_SIZE := 16064k
++  DEVICE_VENDOR := ZHANG
++  DEVICE_MODEL := ROUTER
++  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap -uboot-envtools
++endef
++TARGET_DEVICES += zhang_router
+--- /dev/null
++++ b/package/base-files/files/etc/hotplug.d/button/99-my-gpio-logic
+@@ -0,0 +1,32 @@
++#!/bin/sh
++
++# 只有在按下时触发逻辑
++[ "$ACTION" = "pressed" ] || exit 0
++
++case "$BUTTON" in
++    "BTN_0")
++        # GPIO7 状态翻转逻辑
++        LED_PATH="/sys/class/leds/out-gpio7/brightness"
++        if [ -f "$LED_PATH" ]; then
++            [ "$(cat $LED_PATH)" -eq 0 ] && echo 255 > "$LED_PATH" || echo 0 > "$LED_PATH"
++        fi
++        ;;
++
++    "BTN_1")
++        # 计数文件存放在 /tmp (内存)
++        COUNT_FILE="/tmp/btn1_count"
++        
++        # 如果文件不存在则初始化为 0
++        [ -f "$COUNT_FILE" ] || echo 0 > "$COUNT_FILE"
++        
++        # 读取并递增
++        COUNT=$(cat "$COUNT_FILE")
++        COUNT=$((COUNT + 1))
++        echo "$COUNT" > "$COUNT_FILE"
++        
++        # 打印信息到系统日志 (使用 logread 查看)
++        logger -t "GPIO_TASK" "helloworld - 已按压次数: $COUNT"
++        echo "helloworld - 已按压次数: $COUNT" > /dev/console
++        echo "GPIO14按键联动，具体场景后续自行发挥 - 已按压次数: $COUNT"   > /dev/pts/0
++        ;;
++esac
+
+--- /dev/null
++++ b/package/base-files/files/etc/uci-defaults/99-init-gpio-config
+@@ -0,0 +1,8 @@
++#!/bin/sh
++
++# 修正脚本执行权限
++chmod +x /etc/hotplug.d/button/99-my-gpio-logic
++
++# 初始化计数文件
++echo 0 > /tmp/btn1_count
++
++exit 0
