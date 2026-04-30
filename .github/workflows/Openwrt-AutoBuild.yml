@@ -281,6 +281,7 @@ jobs:
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
 
+        
     - name: Upload firmware for release
       uses: softprops/action-gh-release@master
       continue-on-error: true
