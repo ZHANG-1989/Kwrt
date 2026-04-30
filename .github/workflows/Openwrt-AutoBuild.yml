@@ -281,7 +281,6 @@ jobs:
         [ ${{ env.COWURL }} ] && echo -e "[奶牛上传] (${{ env.COWURL }} 🐮)\n" >> release.txt
         [ ${{ env.NOTICE }} ] && echo -e "${{ env.NOTICE }}" >> release.txt || true
 
-        
     - name: Upload firmware for release
       uses: softprops/action-gh-release@master
       continue-on-error: true
@@ -293,7 +292,8 @@ jobs:
         name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
         tag_name: ${{ env.date }}_${{matrix.target}}
         body_path: release.txt
-       - name: Organize files easy
+    
+    - name: Organize files easy
       id: organizeeasy
       continue-on-error: true
       run: |
@@ -311,7 +311,6 @@ jobs:
         name: ${{ env.VERSION }}_${{matrix.target}}_ONLY_BIN
         path: |
           openwrt/bin/targets/
-
 
     - name: WeChat notification
       continue-on-error: true
