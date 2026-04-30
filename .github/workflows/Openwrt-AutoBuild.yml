@@ -292,7 +292,26 @@ jobs:
         name: ${{ env.date2 }} ${{matrix.target}} ${{ env.EMOJI }}
         tag_name: ${{ env.date }}_${{matrix.target}}
         body_path: release.txt
-    
+       - name: Organize files easy
+      id: organizeeasy
+      continue-on-error: true
+      run: |
+        shopt -s extglob
+        cd openwrt/bin/targets/*/*/
+        rm -rf !(*.bin|*.buildinfo|*.config)
+        Emoji=("🎉" "🤞" "✨" "🎁" "🎈" "🎄" "🎨" "💋" "🍓" "🍕" "🍉" "💐" "🌴" "🚀" "🛸" "🗽" "⛅" "🌈" "🔥" "⛄" "🐶" "🏅" "🦄" "🐤")
+        echo "EMOJI=${Emoji[$[$RANDOM % ${#Emoji[@]}]]}" >> $GITHUB_ENV
+
+
+    - name: Upload firmware for artifact ONLY_BIN
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_FIRMWARE_FOR_ARTIFACT == 'true'
+      with:
+        name: ${{ env.VERSION }}_${{matrix.target}}_ONLY_BIN
+        path: |
+          openwrt/bin/targets/
+
+
     - name: WeChat notification
       continue-on-error: true
       if: env.SCKEY
