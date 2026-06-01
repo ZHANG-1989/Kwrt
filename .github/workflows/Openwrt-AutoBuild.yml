@@ -259,7 +259,7 @@ jobs:
         SOURCE: openwrt/bin/targets
         REMOTE_HOST: ${{ secrets.SERVER_HOST }}
         REMOTE_USER: ${{ secrets.SERVER_USERNAME }}
-        REMOTE_PORT: ${{ secrets.SERVER_PORT }}
+        REMOTE_PORT: 22
         TARGET: "/www/wwwroot/dl.openwrt.ai/releases/tmp/"
 
     - name: Upload firmware for artifact
