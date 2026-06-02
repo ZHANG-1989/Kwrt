@@ -6,7 +6,7 @@ diff --git a/target/linux/ramips/dts/mt7621_zhang_router.dts b/target/linux/rami
 new file mode 100644
 --- /dev/null
 +++ b/target/linux/ramips/dts/mt7621_zhang_router.dts
-@@ -0,0 +1,217 @@
+@@ -0,0 +1,204 @@
 +
 +//基于这个做调整mt7621_totolink_a7000r.dts
 +// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
@@ -172,19 +172,6 @@ new file mode 100644
 +&gmac0 {
 +	nvmem-cells = <&macaddr_factory_e000 0>;
 +	nvmem-cell-names = "mac-address";
-+};
-+
-+&gmac1 {
-+	status = "okay";
-+	label = "wan";
-+	phy-handle = <&ethphy4>;
-+
-+	nvmem-cells = <&macaddr_factory_e000 1>;
-+	nvmem-cell-names = "mac-address";
-+};
-+
-+&ethphy4 {
-+	/delete-property/ interrupts;
 +};
 +
 +&switch0 {
